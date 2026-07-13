@@ -1,0 +1,15 @@
+{
+  "imports": {
+    "@std/fs": "jsr:@std/fs@^1.0.24",
+    "@std/path": "jsr:@std/path@^1.1.6",
+    "@std/yaml": "jsr:@std/yaml@^1.1.2",
+    "cheerio": "npm:cheerio@^1.2.0",
+    "commander": "npm:commander@^15.0.0",
+    "sanitize-filename": "npm:sanitize-filename@^1.6.4",
+    "turndown": "npm:turndown@^7.2.4",
+    "turndown-plugin-gfm": "npm:turndown-plugin-gfm@^1.0.2"
+  },
+  "tasks": {
+    "run": "deno run -N=docs.oracle.com -RWE src/main.ts"
+  }
+}
