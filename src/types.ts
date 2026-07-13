@@ -38,4 +38,5 @@ export interface Page {
 /** Scrape options */
 export interface ScrapeOptions {
   out: string;
+  root?: string;
 }

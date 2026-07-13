@@ -12,6 +12,7 @@ program
   .command("scrape")
   .description("scrape to markdown")
   .requiredOption("-o, --out <directory>", "output directory")
+  .option("-r, --root <url>", "root page URL")
   .action(scrape);
 
 await program.parseAsync(Deno.args, { from: "user" });

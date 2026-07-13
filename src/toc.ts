@@ -24,9 +24,10 @@ export async function fetchToc(): Promise<Toc> {
  * Parse TOC
  *
  * @param toc TOC
+ * @param rootUrl URL of subtree root
  * @returns flat list of pages
  */
-export function parseToc(toc: Toc): Page[] {
+export function parseToc(toc: Toc, rootUrl?: URL): Page[] {
   const pages: Page[] = [];
 
   /**
@@ -67,7 +68,78 @@ export function parseToc(toc: Toc): Page[] {
     }
   }
 
-  visit(toc.tree, []);
+  const tree = rootUrl ? [findRootNode(toc, rootUrl)] : toc.tree;
+
+  visit(tree, []);
 
   return pages;
+}
+
+/**
+ * Find subtree root
+ *
+ * - use single matching node with children
+ * - error if multiple matching nodes have children
+ * - otherwise use first matching leaf
+ *
+ * @param toc TOC
+ * @param rootUrl URL of subtree root
+ * @returns subtree root
+ */
+function findRootNode(toc: Toc, rootUrl: URL): TocNode {
+  const subtrees: TocNode[] = [];
+
+  /**
+   * Find subtrees
+   *
+   * - visit tree nodes in display order
+   * - store subtrees with matching URL
+   *
+   * @param tree tree
+   */
+  function visit(tree: TocNode[]): void {
+    for (const node of tree) {
+      const page = toc.pages[node.i];
+
+      if (!page) {
+        throw new Error(`Tree node references missing page: ${node.i}`);
+      }
+
+      const pageUrl = getPageUrl(node.i, page, toc.sourceBasepaths);
+
+      if (pageUrl.href == rootUrl.href) {
+        subtrees.push(node);
+      }
+
+      if (node.c) {
+        visit(node.c);
+      }
+    }
+  }
+
+  visit(toc.tree);
+
+  if (subtrees.length == 0) {
+    throw new Error(`TOC page not found: ${rootUrl.href}`);
+  }
+
+  if (subtrees.length == 1) {
+    return subtrees[0];
+  }
+
+  const branches = subtrees.filter((node) => node.c?.length);
+
+  if (branches.length == 1) {
+    return branches[0];
+  }
+
+  if (branches.length > 1) {
+    const titles = branches.map((node) => toc.pages[node.i].t).join(", ");
+
+    throw new Error(
+      `Multiple TOC subtrees found for ${rootUrl.href}: ${titles}`,
+    );
+  }
+
+  return subtrees[0];
 }

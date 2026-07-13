@@ -14,7 +14,12 @@ export async function scrape(options: ScrapeOptions): Promise<void> {
   const outputDirectory = options.out;
 
   const toc = await fetchToc();
-  const pages = parseToc(toc);
+  const rootUrl = options.root ? new URL(options.root) : undefined;
+  const pages = parseToc(toc, rootUrl);
+
+  if (rootUrl) {
+    console.log(`Selected ${pages[0].title}`);
+  }
 
   const urlFilepathMap = new Map(
     pages
